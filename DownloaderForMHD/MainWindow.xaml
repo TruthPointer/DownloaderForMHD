@@ -1,0 +1,186 @@
+﻿<Window x:Class="DownloaderForMHD.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DownloaderForMHD"
+        mc:Ignorable="d"
+        Title="明慧每日文章批量下载器" x:Name ="myWindows" MinHeight="600" Width ="800" MinWidth="800" MaxWidth="1000" FontSize="14" ResizeMode="CanResize" Loaded="Window_Loaded" WindowStartupLocation="CenterScreen" Closed="myWindows_Closed" SizeChanged="Window_SizeChanged">
+    <Window.Resources>
+        <ToolTip x:Key="InforTip">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- 自动行高 -->
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <!-- 按比例行高 -->
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <!-- 按比例列宽 -->
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="文件名："/>
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Path=fileName}"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="下载链接："/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Path=downloadUrl}"/>
+            </Grid>
+        </ToolTip>
+        <Style x:Key="InforTipStyle" TargetType="{x:Type ListViewItem}">
+            <Setter Property="ToolTip" Value="{Binding Source={StaticResource InforTip}}" />
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="230*"/>
+            <RowDefinition Height="357*"/>
+            <RowDefinition Height="32*" MaxHeight="32"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50" />
+            <ColumnDefinition Width="150" />
+            <ColumnDefinition Width="160"/>
+            <ColumnDefinition Width="160"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0" x:Name="col1"/>
+        <Grid Grid.Column="1" x:Name="col2"/>
+        <Grid Grid.Column="2" x:Name="col3"/>
+        <Grid Grid.Column="3" x:Name="col4"/>
+        <Grid Grid.Column="4" x:Name="col5"/>
+        <DockPanel  Grid.ColumnSpan="7" LastChildFill="True" Grid.RowSpan="3" >
+            <DockPanel DockPanel.Dock="Top" Grid.Row="0" Grid.ColumnSpan="5" VerticalAlignment="Top" HorizontalAlignment="Stretch" LastChildFill="True">
+                <StackPanel DockPanel.Dock="Right" Margin="10,0,5,0" HorizontalAlignment="Stretch">
+                    <GroupBox Height="105" Header="网络设置" VerticalAlignment="Top">
+                        <StackPanel VerticalAlignment="Stretch">
+                            <Border x:Name="bdProxySelection" BorderThickness="2,1,2,1" CornerRadius="2" BorderBrush="White" >
+                                <DockPanel LastChildFill="True" Margin="0,8,0,10" VerticalAlignment="Center">
+                                    <CheckBox x:Name="CkbUseProxy" Content="使用代理" DockPanel.Dock="Left" IsChecked="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" VerticalAlignment="Center" Checked="CkbUseProxy_Checked"/>
+                                    <Button x:Name="BtnEdit" Content="编辑" DockPanel.Dock="Right" Width="42"  Click="BtnEdit_Click" Margin="10,0,0,0" Visibility="Collapsed"/>
+                                    <ComboBox x:Name="CmbProxy" Margin="10,0,0,0" HorizontalContentAlignment="Right" Panel.ZIndex="1" SelectionChanged="CmbProxy_SelectionChanged"/>
+                                </DockPanel>
+                            </Border>
+                            <DockPanel VerticalAlignment="Center" LastChildFill="True" Margin="0,3,2,0">
+                                <Label Content="同时下载文件数"/>
+                                <ComboBox x:Name="CmbThreadNum" Margin="10,0,0,0" HorizontalContentAlignment="Right" SelectedIndex="2" SelectionChanged="CmbThreadNum_SelectionChanged">
+                                    <ComboBoxItem Content="1"/>
+                                    <ComboBoxItem Content="2"/>
+                                    <ComboBoxItem Content="3"/>
+                                    <ComboBoxItem Content="4"/>
+                                    <ComboBoxItem Content="5"/>
+                                    <ComboBoxItem Content="6"/>
+                                    <ComboBoxItem Content="7"/>
+                                    <ComboBoxItem Content="8"/>
+                                    <ComboBoxItem Content="9"/>
+                                </ComboBox>
+                            </DockPanel>
+                        </StackPanel>
+
+                    </GroupBox>
+                    <GroupBox x:Name="GbFileType" Height="60" Header="下载网页文件类型" VerticalAlignment="Top" Margin="0,10,0,0">
+                        <DockPanel>
+                            <RadioButton x:Name="RbFileWithoutPic" Content="无图" Margin="10,0,30,0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Panel.ZIndex="3" Click="RbFileWithoutPic_Click" IsChecked="False"/>
+                            <DockPanel LastChildFill="True" ToolTip="每年元旦、中国新年、5•13师父生日暨世界法轮大法日，及中秋节期间&#x0a;的一周左右，会有大量的贺卡，致下载的压缩文件体积达500MB左右。&#x0a;而根据观察其它日期的压缩文件一般不超过50MB。此设置可简化小图下&#x0a;载，如下载超过设定大小的文件时，程序会自动切换为无图下载，无需&#x0a;手动切换。如需下载此期间大的压缩文件，请取消此限制的勾选。">
+                                <RadioButton x:Name="RbFileWithPic" Content="小图" IsChecked="True" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Panel.ZIndex="4" Margin="0,0,10,0" Click="RbFileWithPic_Click"/>
+                                <CheckBox x:Name="CkBLimitMaxFileSize" Content="限制单个文件最大不超过（MB）：" VerticalAlignment="Center" IsChecked="True" Panel.ZIndex="5" Checked="CkBLimitMaxFileSize_Checked"/>
+                                <TextBox x:Name="TbMaxFileSize" Text="50" TextAlignment="Right" VerticalAlignment="Center" Panel.ZIndex="6" PreviewKeyDown="TbMaxFileSize_PreviewKeyDown" InputMethod.IsInputMethodEnabled="False" LostFocus="TbMaxFileSize_LostFocus" />
+                            </DockPanel>
+                        </DockPanel>
+                    </GroupBox>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,15,0,0">
+                        <Button x:Name="BtnStartDownload" Content="开始下载" Width="120" Height="32" Click="BtnStartDownload_Click" Margin="15,0,10,0" Panel.ZIndex="7"/>
+                        <Button x:Name="BtnStopDownload" Content="停止下载"  Width="120" Height="32" Click="BtnStopDownload_Click" Margin="10,0,10,0" Panel.ZIndex="8"/>
+                        <Button x:Name="BtnOpenDownloadPath" Content="打开下载目录" Width="120" Height="32" Click="BtnOpenDownloadPath_Click" Margin="10,0,10,0" Panel.ZIndex="9"/>
+
+                    </StackPanel>
+                </StackPanel>
+                <GroupBox DockPanel.Dock="Left" Header="选择下载日期" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5,0,0,0">
+                    <Calendar x:Name="CalendarMonth" SelectionMode="MultipleRange" RenderTransformOrigin="0.5,0.5" Height="170" Width="260" DisplayDate="2026-06-25" DisplayDateStart="1999-01-01" SelectedDatesChanged="CalendarMonth_SelectedDatesChanged" ToolTip="选择时可结合：&#x0a;1、Ctrl 键实现多个日期的选择；&#x0a;2、Shift 键实现连续日期的选择；&#x0a;3、Ctrl 键与Shift 键组合实现复杂日期的选择。">
+                        <Calendar.Background>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="#FFE4EAF0"/>
+                                <GradientStop Color="#FFECF0F4" Offset="0.16"/>
+                                <GradientStop Color="#FFFCFCFD" Offset="0.16"/>
+                                <GradientStop Color="White" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Calendar.Background>
+                        <Calendar.LayoutTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                                <SkewTransform/>
+                                <RotateTransform/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Calendar.LayoutTransform>
+                    </Calendar>
+                </GroupBox>
+
+            </DockPanel>
+            <StatusBar DockPanel.Dock="Bottom" x:Name="sbStatus" Grid.Row="2" Grid.ColumnSpan="5" Height="30" VerticalAlignment="Bottom" HorizontalContentAlignment="Stretch" Margin="0,0,6,0">
+                <DockPanel LastChildFill="True" Width="{Binding ElementName=sbStatus, Path=ActualWidth}" Margin="0,0,0,0">
+                    <Label x:Name="lbTaskInfo" DockPanel.Dock="Left" Content="欢迎使用本程序！" Foreground="#FF0000ff" FontWeight="Normal"/>
+                    <ProgressBar x:Name="pbTaskInfo" Height="12"  Minimum="0" Maximum="100" Value="{Binding TaskProgress}" Margin="0,0,6,0"/>
+                </DockPanel>
+            </StatusBar>
+            <ListView x:Name="LvDownloadItem" Grid.Row="1" HorizontalAlignment="Stretch" Margin="6,8,6,3" BorderThickness="1,1,1,1" BorderBrush="#C85599" ItemContainerStyle="{StaticResource InforTipStyle}"  Grid.ColumnSpan="5" Panel.ZIndex="28">
+
+                <ListView.View>
+                    <GridView x:Name="gvDownloadItem">
+                        <GridViewColumn  Header="序号" DisplayMemberBinding="{Binding Path=DisplayId}" Width="{Binding ElementName=col1, Path=ActualWidth}"/>
+                        <GridViewColumn  Header="文件名"  Width="{Binding ElementName=col2, Path=ActualWidth}">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button x:Name="btnLvItemPause" Tag="{Binding Path=id}" BorderThickness="0" Background="#00000000" Visibility="Collapsed">
+                                            <WrapPanel>
+                                                <Image Width="16" Height="16" Margin="4,0,4,0" Source="/pause_download.png"/>
+                                            </WrapPanel>
+                                        </Button>
+                                        <TextBlock Text="{Binding Path=fileName}" TextAlignment="Right" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn  Header="下载链接" Width="0">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock x:Name="tbDownloadUrl" Text="{Binding Path=downloadUrl, Mode=TwoWay}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn x:Name="gvcDownloadSpeed"  Header="速度" Width="{Binding ElementName=col3, Path=ActualWidth}">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path=downloadSpeed}" TextAlignment="Center" MinWidth="{Binding Path=ActualWidth,ElementName=gvcDownloadSpeed}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn x:Name="gvcDownloadFileSize"  Header="已下载 / 文件大小" Width="{Binding ElementName=col4, Path=ActualWidth}">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Path=fileSize}" TextAlignment="Center" MinWidth="{Binding Path=ActualWidth,ElementName=gvcDownloadFileSize}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn x:Name="gvcDownloadProgress"  Header="下载進度" Width="{Binding ElementName=col5, Path=Width}">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <DockPanel LastChildFill="True" Width="{Binding ElementName=col5, Path=Width}" >
+                                        <TextBlock Width="40" DockPanel.Dock="Right" Text="{Binding downloadProgress, StringFormat={}{0}%}" TextAlignment="Right" VerticalAlignment="Center" Margin="3,0,3,0"/>
+                                        <ProgressBar Height="12" VerticalAlignment="Center" Minimum="0" Maximum="100" Value="{Binding Path=downloadProgress}" Margin="2,0,0,0"/>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                    </GridView>
+                </ListView.View>
+            </ListView>
+
+        </DockPanel>
+
+
+
+
+    </Grid>
+</Window>
