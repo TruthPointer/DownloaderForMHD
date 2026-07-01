@@ -41,15 +41,15 @@ https://download.visualstudio.microsoft.com/download/pr/f18288f6-1732-415b-b577-
 
 此時，請點擊“Download it now”下載並安裝。此種情況下下載安裝的是微軟最新版的net Core8運行時。
 
-（一）功能提示
+### （一）功能提示
 
 ![](./images/image_2.png)
 
-（二）日历控件选择的方法
+### （二）日历控件选择的方法
 
 ![](./images/image_3.png)
 
-（三）最簡只需四步即可批量下載明慧每日文章。
+### （三）最簡只需四步即可批量下載明慧每日文章。
 
 ![](./images/image_4.png)
 
