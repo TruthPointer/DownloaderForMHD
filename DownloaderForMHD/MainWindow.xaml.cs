@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace DownloaderForMHD
 {
@@ -297,7 +298,7 @@ namespace DownloaderForMHD
 
         private void myWindows_Closed(object sender, EventArgs e)
         {
-            SaveSettings();
+            SaveSettings(settings);
             SaveDownloadHistory();
         }
 
@@ -315,8 +316,10 @@ namespace DownloaderForMHD
             //
             BtnStartDownload.IsEnabled = true;
             BtnStopDownload.IsEnabled = false;
-
-
+            //
+            for (int i = 1; i <= 10; i++) {
+                CmbThreadNum.Items.Add(i);
+            }
         }
         private string getApplicationVersion()
         {
@@ -362,18 +365,8 @@ namespace DownloaderForMHD
                 downloadHistory = await task2;
                 ShowTaskInfoOnUI("准备就绪，欢迎使用本程序！");
                 //2.初始化线程数量
-                CkbUseProxy.IsChecked = settings.UseProxy;
                 InitProxy();
                 InitOthers();
-                if (downloadHistory != null && downloadHistory.DownloadPackages.Count > 0)
-                {
-                    InitSavedDownloadPackages(downloadHistory.DownloadPackages);
-                }
-                if (settings.UserAgents != null && settings.UserAgents.Count > 0)
-                {
-                    userAgent = settings.UserAgents[new Random().Next(settings.UserAgents.Count)];
-                }
-                Log($"App UserAgent = {userAgent}");
             }
             catch (Exception e)
             {
@@ -400,13 +393,13 @@ namespace DownloaderForMHD
                 if (settings.Proxies.Count == 0)
                 {
                     settings.ProxyIndexSelected = -1;
-                    SaveSettings();
+                    SaveSettings(settings);
                     return null;
                 }
                 if(removed > 0 || settings.ProxyIndexSelected <= 0 || settings.ProxyIndexSelected > settings.Proxies.Count)
                 {
                     settings.ProxyIndexSelected = 1;
-                    SaveSettings();
+                    SaveSettings(settings);
                 }
                 Log("ParseMainJson OK...");
                 return settings;
@@ -418,8 +411,9 @@ namespace DownloaderForMHD
             }
         }
 
-        private void SaveSettings()
+        private void SaveSettings(Settings? settings)
         {
+            if(settings == null) return;
             var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
             File.WriteAllText(SETTINGS_JSON_FILE, json);
         }
@@ -529,16 +523,20 @@ namespace DownloaderForMHD
         {
             if (settings == null || settings.Proxies == null) return;
             //1.
+            CkbUseProxy.IsChecked = settings.UseProxy;
+            DpProxy.Background = settings.UseProxy ? null : Brushes.Red;
+            CkbUseProxy.Foreground = settings.UseProxy ? Brushes.Black : Brushes.White;
+            //2.
             foreach (var item in settings.Proxies)
             {
                 CmbProxy.Items.Add(item);
             }
             CmbProxy.SelectedIndex = settings.ProxyIndexSelected - 1;
-            //2.
+            //3.
             ParseProxy(settings.Proxies[settings.ProxyIndexSelected - 1], out string proxyHost, out int proxyPort);
             settings.ProxyHost = proxyHost;
             settings.ProxyPort = proxyPort;
-            //3.
+            //4.
             proxyState.UseProxy = settings.UseProxy;
             proxyState.IsProxyChanged = false;
             proxyState.ProxyHost = settings.ProxyHost;
@@ -548,22 +546,32 @@ namespace DownloaderForMHD
         private void InitOthers()
         {
             //1.
-            if (settings == null || settings.Proxies == null) return;
+            if (settings == null) return;
             var threadIndex = CmbThreadNum.Items.IndexOf(settings.ThreadNum);
             if (threadIndex == -1)
             {
                 CmbThreadNum.SelectedIndex = 2;//num = 3
-                SaveSettings();
+                SaveSettings(settings);
             }                
             else
-                CmbThreadNum.SelectedIndex = settings.ThreadNum;
+                CmbThreadNum.SelectedIndex = threadIndex;
             //2.
             RbFileWithoutPic.IsChecked = !settings.DownloadFileType;
             RbFileWithPic.IsChecked = settings.DownloadFileType;
             //3.
             CkBLimitMaxFileSize.IsChecked = settings.LimitMaxSizeForOneFile;
             TbMaxFileSize.Text = settings.MaxSizeForOneFile.ToString();
-
+            //4.
+            if (settings.UserAgents != null && settings.UserAgents.Count > 0)
+            {
+                userAgent = settings.UserAgents[new Random().Next(settings.UserAgents.Count)];
+            }
+            Log($"App UserAgent = {userAgent}");
+            //5.
+            if (downloadHistory != null && downloadHistory.DownloadPackages.Count > 0)
+            {
+                InitSavedDownloadPackages(downloadHistory.DownloadPackages);
+            }
         }
 
         private void InitSavedDownloadPackages(List<DownloadPackage> packages)
@@ -666,7 +674,7 @@ namespace DownloaderForMHD
                 }
                 if (settings == null) return;
                 settings.MaxSizeForOneFile = maxFileSize;
-                SaveSettings();
+                SaveSettings(settings);
             }
         }
 
@@ -688,24 +696,27 @@ namespace DownloaderForMHD
 
         }
 
-        private void CkbUseProxy_Checked(object sender, RoutedEventArgs e)
+        private void CkbUseProxy_Click(object sender, RoutedEventArgs e)
         {
             if (settings == null) return;
-            settings.UseProxy = CkbUseProxy.IsChecked ?? false;
-            SaveSettings();
+            bool isChecked = CkbUseProxy.IsChecked ?? false;
+            settings.UseProxy = isChecked;
+            SaveSettings(settings);
+            DpProxy.Background = isChecked ? null : Brushes.Red;
+            CkbUseProxy.Foreground = isChecked ? Brushes.Black : Brushes.White;
         }
 
         private void CmbProxy_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (settings == null) return;
             string proxy = CmbProxy.SelectedItem?.ToString() ?? "";
             if (string.IsNullOrEmpty(proxy)) return;
 
             ParseProxy(proxy, out string proxyHost, out int proxyPort);
-            if (settings == null) return;
             settings.ProxyIndexSelected = CmbProxy.SelectedIndex + 1;
             settings.ProxyHost = proxyHost;
             settings.ProxyPort = proxyPort;
-            SaveSettings();
+            SaveSettings(settings);
 
             proxyState.IsProxyChanged = true;
             proxyState.ProxyHost = proxyHost;
@@ -715,8 +726,8 @@ namespace DownloaderForMHD
         private void CmbThreadNum_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (settings == null) return;
-            settings.ThreadNum = Int32.Parse(CmbThreadNum.Text);
-            SaveSettings();
+            settings.ThreadNum = (int)(CmbThreadNum.SelectedItem);
+            SaveSettings(settings);
         }
 
         private void RbFileWithPic_Click(object sender, RoutedEventArgs e)
@@ -732,7 +743,7 @@ namespace DownloaderForMHD
                 fileWithPic = true;
                 RbFileWithPic.IsChecked = true;
                 RbFileWithoutPic.IsChecked = false;
-                SaveSettings();
+                SaveSettings(settings);
             }
         }
 
@@ -749,7 +760,7 @@ namespace DownloaderForMHD
                 fileWithPic = false;
                 RbFileWithoutPic.IsChecked = true;
                 RbFileWithPic.IsChecked = false;
-                SaveSettings();
+                SaveSettings(settings);
             }
         }
 
@@ -757,7 +768,7 @@ namespace DownloaderForMHD
         {
             if (settings == null) return;
             settings.LimitMaxSizeForOneFile = CkBLimitMaxFileSize.IsChecked ?? false;
-            SaveSettings();
+            SaveSettings(settings);
         }
 
         #endregion
@@ -1357,45 +1368,7 @@ namespace DownloaderForMHD
                 CtrolWidgetsOnTask(false, string.Join("\r\n", errors));
                 return;
             }
-            //2.完成一个，开始下一个，因此，在开始的 ParallelAction 确定好数量后就会一直延续。
-            /* if (!abStartDownload.Get())
-             {
-                 CtrolWidgetsOnTask(AppTask.TASK_DOWNLOAD, false);
-                 return;
-             }
-             List<KeyValuePair<int, DownloadItem>>? downloadPairs = TakeOneTask();
-             if (downloadPairs == null)
-             {
-                 //没有下载任务可以执行，且所有的下载都成功
-                 if (downloadItemList.ToList().All(item1 => item1.downloadResult == true))
-                 {
-                     CtrolWidgetsOnTask(AppTask.TASK_DOWNLOAD, false);
-                 }
-                 return;
-             }
-             Log($"OnDownloadFileCompleted >>> 开始新的下载： {downloadPairs[0].Key} - {downloadPairs[0].Value.fileName}！");
-             ParallelAction(downloadPairs);*/
         }
-
-        /*private List<KeyValuePair<int, DownloadItem>>? TakeOneTask()
-        {
-            lock (obj)
-            {
-                currentTaskId++;
-                if (currentTaskId > downloadList.Count - 1)
-                {
-                    Log(">>> 没有更多需要下载的了...");
-                    return null;
-                }
-
-                Log($"OnDownloadFileCompleted >>> 新的下载 index = {currentTaskId}！");
-                List<KeyValuePair<int, DownloadItem>> downloadPairs = new List<KeyValuePair<int, DownloadItem>>();
-                DownloadItem newItem = downloadList.ElementAt(currentTaskId);
-                downloadPairs.Add(new KeyValuePair<int, DownloadItem>(currentTaskId, newItem));
-
-                return downloadPairs;
-            }
-        }*/
 
         private void OnChunkDownloadProgressChanged(object? sender, Downloader.DownloadProgressChangedEventArgs e)
         {

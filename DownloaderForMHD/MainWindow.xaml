@@ -53,26 +53,14 @@
                 <StackPanel DockPanel.Dock="Right" Margin="10,0,5,0" HorizontalAlignment="Stretch">
                     <GroupBox Height="105" Header="网络设置" VerticalAlignment="Top">
                         <StackPanel VerticalAlignment="Stretch">
-                            <Border x:Name="bdProxySelection" BorderThickness="2,1,2,1" CornerRadius="2" BorderBrush="White" >
-                                <DockPanel LastChildFill="True" Margin="0,8,0,10" VerticalAlignment="Center">
-                                    <CheckBox x:Name="CkbUseProxy" Content="使用代理" DockPanel.Dock="Left" IsChecked="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" VerticalAlignment="Center" Checked="CkbUseProxy_Checked"/>
-                                    <Button x:Name="BtnEdit" Content="编辑" DockPanel.Dock="Right" Width="42"  Click="BtnEdit_Click" Margin="10,0,0,0" Visibility="Collapsed"/>
-                                    <ComboBox x:Name="CmbProxy" Margin="10,0,0,0" HorizontalContentAlignment="Right" Panel.ZIndex="1" SelectionChanged="CmbProxy_SelectionChanged"/>
-                                </DockPanel>
-                            </Border>
+                            <DockPanel x:Name="DpProxy" LastChildFill="True" Margin="0,8,0,10" VerticalAlignment="Center" Background="#00000000">
+                                <CheckBox x:Name="CkbUseProxy" Content="使用代理" Margin="4,0,0,0" DockPanel.Dock="Left" IsChecked="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" VerticalAlignment="Center" Click="CkbUseProxy_Click"/>
+                                <Button x:Name="BtnEdit" Content="编辑" DockPanel.Dock="Right" Width="42"  Click="BtnEdit_Click" Margin="10,0,0,0" Visibility="Collapsed"/>
+                                <ComboBox x:Name="CmbProxy" Margin="10,3,5,3" HorizontalContentAlignment="Right" Panel.ZIndex="1" SelectionChanged="CmbProxy_SelectionChanged"/>
+                            </DockPanel>
                             <DockPanel VerticalAlignment="Center" LastChildFill="True" Margin="0,3,2,0">
                                 <Label Content="同时下载文件数"/>
-                                <ComboBox x:Name="CmbThreadNum" Margin="10,0,0,0" HorizontalContentAlignment="Right" SelectedIndex="2" SelectionChanged="CmbThreadNum_SelectionChanged">
-                                    <ComboBoxItem Content="1"/>
-                                    <ComboBoxItem Content="2"/>
-                                    <ComboBoxItem Content="3"/>
-                                    <ComboBoxItem Content="4"/>
-                                    <ComboBoxItem Content="5"/>
-                                    <ComboBoxItem Content="6"/>
-                                    <ComboBoxItem Content="7"/>
-                                    <ComboBoxItem Content="8"/>
-                                    <ComboBoxItem Content="9"/>
-                                </ComboBox>
+                                <ComboBox x:Name="CmbThreadNum" Margin="10,0,3,0" HorizontalContentAlignment="Right" SelectedIndex="2" SelectionChanged="CmbThreadNum_SelectionChanged"/>
                             </DockPanel>
                         </StackPanel>
 
