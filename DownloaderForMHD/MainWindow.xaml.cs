@@ -556,6 +556,7 @@ namespace DownloaderForMHD
             else
                 CmbThreadNum.SelectedIndex = threadIndex;
             //2.
+            fileWithPic = settings.DownloadFileType;//[20260705]
             RbFileWithoutPic.IsChecked = !settings.DownloadFileType;
             RbFileWithPic.IsChecked = settings.DownloadFileType;
             //3.
@@ -634,7 +635,8 @@ namespace DownloaderForMHD
 
         private async void BtnStartDownload_Click(object sender, RoutedEventArgs e)
         {
-            await DownloadAll();
+             Log("BtnStartDownload_Click...");
+             await DownloadAll();
         }
 
         private void BtnStopDownload_Click(object sender, RoutedEventArgs e)
@@ -1068,7 +1070,11 @@ namespace DownloaderForMHD
             //2.检查当前完成状态
             var list = CheckFileDownloadState();
             //2.1 [1]获取完成，不需要从新获取
-            if (list == null) return;
+            if (list == null)
+            {
+                Log("【意外错误】下载列表为空或没有需要下载项目！");
+                return;
+            }
             totalDownloadNum = list.Count;
             downloadList.Clear();
             downloadList.AddRange(list);
